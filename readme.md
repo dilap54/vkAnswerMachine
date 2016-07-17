@@ -1,7 +1,7 @@
 ## vkAnswerMachine - автоответчик для ВКонтакте на node.js
 # Запуск
 ### Получите токен
-[https://oauth.vk.com/authorize?client_id=5550899&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=4098&response_type=token&v=5.52&state=4itProductions](https://oauth.vk.com/authorize?client_id=5550899&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=4098&response_type=token&v=5.52&state=4itProductions)
+[https://oauth.vk.com/authorize?client_id=5550899&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=69634&response_type=token&v=5.52&state=4itProductions](https://oauth.vk.com/authorize?client_id=5550899&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=69634&response_type=token&v=5.52&state=4itProductions)
 ### Переименуйте config.js.default в config.js и вставьте туда токен
 ```js
 exports.token = '<access_token>';

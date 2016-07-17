@@ -1,5 +1,3 @@
-// https://oauth.vk.com/authorize?client_id=5550899&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=4098&response_type=token&v=5.52&state=4itProductions
-// https://{$server}?act=a_check&key={$key}&ts={$ts}&wait=25&mode=2 
 var https = require('https');
 var querystring = require('querystring');
 var config = require('./config.js');
