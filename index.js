@@ -1,6 +1,8 @@
 // https://oauth.vk.com/authorize?client_id=5550899&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=4098&response_type=token&v=5.52&state=4itProductions
 // https://{$server}?act=a_check&key={$key}&ts={$ts}&wait=25&mode=2 
 var https = require('https');
+var url = require('url');
+var querystring = require('querystring');
 var config = require('./config.js');
 
 
@@ -49,6 +51,7 @@ var AnswerMachine = function(token){
 	this.token = token;
 	this.longPollServer = {};
 	this.lastLongPollQueryDate = new Date();
+	this.answerers = {};
 	this.getLongPollServer = function(){
 		console.log(now(), 'getLongPollServer');
 		var that = this;
@@ -131,7 +134,7 @@ var AnswerMachine = function(token){
 	this.getFriends = function(){
 		console.log(now(), 'update friends');
 		var that = this;
-		https.get('https://api.vk.com/method/friends.get?&access_token='+this.token+'&v=5.52', function(res){
+		https.get('https://api.vk.com/method/friends.get?access_token='+this.token+'&v=5.52', function(res){
 			var body = '';
 			res.on('data', function(chunk){
 				body+=chunk;
@@ -155,6 +158,31 @@ var AnswerMachine = function(token){
 	this.updateFriendsUpdateTimer = setInterval(this.getFriends, 1000*60*60);
 
 
+	this.sendMessage = function(user_id, message){
+		message = querystring.escape(message);
+		console.log(now(), 'sendMessage');
+		var that = this;
+		var query = 'https://api.vk.com/method/messages.send?user_id='+user_id
+				+'&message='+message
+				+'&access_token='+this.token
+				//+'&random_id='+uuid.v4()
+				+'&v=5.52';
+		console.log('query', query);
+		https.get(query, function(res){
+			var body = '';
+			res.on('data', function(chunk){
+				body+=chunk;
+			});
+			res.on('end', function(){
+				//body = JSON.parse(body);
+				console.log('sendMessage',body);
+			});	
+		})
+		.on('error', function(e) {
+			console.error('sendMessageError',e);
+		});
+	}
+
 	this.processMessage = function(message){
 		var msg = {
 			message_id: message[1],
@@ -167,12 +195,83 @@ var AnswerMachine = function(token){
 		console.log(msg);
 		if (!that.friends.includes(msg.from_id) && msg.from_id<2000000000){
 			console.log('process');
+			if (!(msg.from_id in this.answerers)){
+				this.answerers[msg.from_id] = new Answerer();
+			}
+			var answer = this.answerers[msg.from_id].getAnswer(msg);
+			if (answer){
+				this.sendMessage(msg.from_id, answer);
+			}
+			console.log(answer || 'no answer');
 		}
 	}
 	
 
 }
 function Answerer(){
-
+	this.headerText = 'vkAnswerMachine:';
+	this.header = this.headerText +'\n';
+	this.messages = [];
+	this.isStop = false;
+	this.lastAnswer = '';
+	this.getAnswer = function(msg){
+		if (msg.text.indexOf(this.headerText) != 0){
+			if (msg.text == '/restart'){
+				this.lastAnswer = '';
+				this.isStop = false;
+				this.clearMessages();
+				this.lastAnswer = this.header
+					+'Автоответчик перезапущен.';
+				return this.lastAnswer;
+			}
+			else if (msg.text == '/stop'){
+				this.isStop = true;
+				this.lastAnswer = this.header
+					+'А';
+					//+'Автоответчик остановлен.';
+				return this.lastAnswer;
+			}
+			else if (!this.isStop){
+				if (this.messages.length == 0){
+					this.messages.push(msg);
+					this.lastAnswer = 'vkAnswerMachine by 4it.me\n\n'
+						+'Вас приветствует автоответчик\n'
+						+'Если вы хотите мне что то продать, введите 1\n'
+						+'Если вы хотите попросить денег, введите 2\n'
+						+'Если у вас есть вопрос, введите 3\n'
+						+'Если вы просто хотите пообщаться, введите 4\n';
+					return this.lastAnswer;
+				}
+				else if (msg.text == '1'){
+					this.clearMessages();
+					this.lastAnswer = this.header
+						+'Мне ничего не нужно, идите нахер';
+					return this.lastAnswer;
+				}
+				else if (msg.text == '2'){
+					this.clearMessages();
+					this.lastAnswer = this.header
+						+'Денег я не дам, идите нахер';
+					return this.lastAnswer;
+				}
+				else if (msg.text == '3'){
+					this.isStop = true;
+					this.lastAnswer = this.header
+						+'Напишите подробно, о чем вы хотите спросить. Вопросы типа "а можно ли задать вопрос?" не принимаются. Ждите ответа.';
+					return this.lastAnswer;
+				}
+				else if (msg.text == '4'){
+					this.clearMessages();
+					this.lastAnswer = this.header
+						+'Я вам не верю, идите нахер';
+					return this.lastAnswer;
+				}
+			}
+		}
+		return '';
+	};
+	this.clearMessages = function(){
+		this.messages = [];
+	}
 }
 var answerMachine = new AnswerMachine(config.token);
