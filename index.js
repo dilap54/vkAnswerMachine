@@ -62,7 +62,7 @@ var AnswerMachine = function(token){
 			res.on('end', function(){
 				body = JSON.parse(body);
 				if (body.response){
-					console.log('body', body);
+					console.log(now(), 'longPollServer', body);
 					that.longPollServer = body.response;
 					that.sendLongPoll();
 				}
@@ -76,7 +76,7 @@ var AnswerMachine = function(token){
 		});
 	}
 	this.sendLongPoll = function(){
-		console.log(now(), 'sendLongPoll');
+		//console.log(now(), 'sendLongPoll');
 		var that = this;
 		this.lastLongPollQueryDate = new Date();
 		this.lastLongPollReq = https.get('https://'+this.longPollServer.server+'?act=a_check&key='+this.longPollServer.key+'&ts='+this.longPollServer.ts+'&wait=25', function(res){
@@ -158,8 +158,8 @@ var AnswerMachine = function(token){
 
 
 	this.sendMessage = function(user_id, message){
+		console.log(now(), 'sendMessage', message);
 		message = querystring.escape(message);
-		console.log(now(), 'sendMessage');
 		var that = this;
 		var query = 'https://api.vk.com/method/messages.send?user_id='+user_id
 				+'&message='+message
@@ -213,9 +213,8 @@ var AnswerMachine = function(token){
 		msg.flags.UNREAD = (message[2]/1 >= 1);
 		message[2]%=1;
 
-		console.log(msg);
 		if (!msg.flags.OUTBOX && !that.friends.includes(msg.from_id) && !msg.flags.FRIENDS && msg.from_id<2000000000){
-			console.log('process');
+			console.log('process',msg);
 			if (!(msg.from_id in this.answerers)){
 				this.answerers[msg.from_id] = new Answerer();
 			}
@@ -223,7 +222,6 @@ var AnswerMachine = function(token){
 			if (answer){
 				this.sendMessage(msg.from_id, answer);
 			}
-			console.log(answer || 'no answer');
 		}
 	}
 	
