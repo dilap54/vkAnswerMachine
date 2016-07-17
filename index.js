@@ -248,7 +248,7 @@ function Answerer(){
 			else if (msg.text == '/stop'){
 				this.isStop = true;
 				this.lastAnswer = this.header
-					+'А';
+					+'Автоответчик остановлен.';
 					//+'Автоответчик остановлен.';
 				return this.lastAnswer;
 			}
