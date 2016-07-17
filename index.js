@@ -167,15 +167,16 @@ var AnswerMachine = function(token){
 				+'&access_token='+this.token
 				//+'&random_id='+uuid.v4()
 				+'&v=5.52';
-		console.log('query', query);
 		https.get(query, function(res){
 			var body = '';
 			res.on('data', function(chunk){
 				body+=chunk;
 			});
 			res.on('end', function(){
-				//body = JSON.parse(body);
-				console.log('sendMessage',body);
+				body = JSON.parse(body);
+				if (!body.response){
+					console.error('sendMessageError',body);
+				}
 			});	
 		})
 		.on('error', function(e) {
@@ -186,14 +187,35 @@ var AnswerMachine = function(token){
 	this.processMessage = function(message){
 		var msg = {
 			message_id: message[1],
-			flags: message[2],
+			flags: {},
 			from_id: message[3],
 			timestamp: message[4],
 			subject: message[5],
 			text: message[6]
-		}
+		};
+		msg.flags.MEDIA = (message[2]/512 >= 1);
+		message[2]%=512;
+		msg.flags.FIXED = (message[2]/256 >= 1);
+		message[2]%=256;
+		msg.flags.DELЕTЕD = (message[2]/128 >= 1);
+		message[2]%=128;
+		msg.flags.SPAM = (message[2]/64 >= 1);
+		message[2]%=64;
+		msg.flags.FRIENDS = (message[2]/32 >= 1);
+		message[2]%=32;
+		msg.flags.CHAT = (message[2]/16 >= 1);
+		message[2]%=16;
+		msg.flags.IMPORTANT = (message[2]/8 >= 1);
+		message[2]%=8;
+		msg.flags.REPLIED = (message[2]/4 >= 1);
+		message[2]%=4;
+		msg.flags.OUTBOX = (message[2]/2 >= 1);
+		message[2]%=2;
+		msg.flags.UNREAD = (message[2]/1 >= 1);
+		message[2]%=1;
+
 		console.log(msg);
-		if (!that.friends.includes(msg.from_id) && msg.from_id<2000000000){
+		if (!msg.flags.OUTBOX && !that.friends.includes(msg.from_id) && !msg.flags.FRIENDS && msg.from_id<2000000000){
 			console.log('process');
 			if (!(msg.from_id in this.answerers)){
 				this.answerers[msg.from_id] = new Answerer();
