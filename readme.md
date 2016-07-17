@@ -10,7 +10,7 @@ exports.token = '<access_token>';
 ```bash
 node index.js
 ```
-### Демонизация
+### Демонизируйте
 Для непрерывной работой можно воспользоваться [PM2](https://github.com/Unitech/pm2)
 ```bash
 npm install pm2 -g
