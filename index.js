@@ -65,12 +65,12 @@ var AnswerMachine = function(token){
 					that.sendLongPoll();
 				}
 				else{
-					console.error('body', body);
+					console.error(now(), 'getLongPollServerErr', body);
 				}
 			});	
 		})
 		.on('error', function(e) {
-			console.error(e);
+			console.error(now(), 'getLongPollServer', e);
 		});
 	}
 	this.sendLongPoll = function(){
@@ -99,12 +99,12 @@ var AnswerMachine = function(token){
 					that.getLongPollServer();
 				}
 				else{
-					console.error('bodyErr', body);
+					console.error(now(), 'sendLongPollBodyErr', body);
 				}
 			});	
 		})
 		.on('error', function(e) {
-			console.error(e);
+			console.error(now(), 'sendLongPollErr', e);
 		})
 		.on('timeout', function(){
 			console.error(now(), 'longPollReq timeout');
@@ -143,12 +143,12 @@ var AnswerMachine = function(token){
 					that.friends = body.response.items;
 				}
 				else{
-					console.error('body', body);
+					console.error(now(), 'updateFriendsBodyErr', body);
 				}
 			});	
 		})
 		.on('error', function(e) {
-			console.error(e);
+			console.error(now(), 'updateFriendsErr',e);
 		});
 	}
 	this.getFriends();
@@ -172,12 +172,12 @@ var AnswerMachine = function(token){
 			res.on('end', function(){
 				body = JSON.parse(body);
 				if (!body.response){
-					console.error('sendMessageError',body);
+					console.error(now(), 'sendMessageBodyError',body);
 				}
 			});	
 		})
 		.on('error', function(e) {
-			console.error('sendMessageError',e);
+			console.error(now(), 'sendMessageErr',e);
 		});
 	}
 
