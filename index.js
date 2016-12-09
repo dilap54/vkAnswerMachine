@@ -109,6 +109,7 @@ var AnswerMachine = function(token){
 		.on('timeout', function(){
 			console.error(now(), 'longPollReq timeout');
 			that.lastLongPollReq.end();
+			setTimeout(that.sendLongPoll, 1000);
 			that.sendLongPoll();
 		})
 		.setTimeout(30000);
@@ -120,7 +121,9 @@ var AnswerMachine = function(token){
 	function checkHealth(){
 		if (Date.now() - that.lastLongPollQueryDate.getTime() > 1000*60*2){
 			console.error(now(), 'WARNING:', 'failRestart');
-			that.lastLongPollReq.abort();
+			if (that.lastLongPollReq !== undefined){
+				that.lastLongPollReq.abort();
+			}
 			that.getLongPollServer();
 		}
 	}
